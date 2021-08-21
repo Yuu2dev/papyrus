@@ -1,6 +1,3 @@
-<style>
-    .important {color: red;}
-</style>
 # Vue.js
 updated 2021.08.04
 
@@ -67,7 +64,7 @@ export default {
 <p>computed 프로퍼티를 사용 할 때에는 괄호를 붙여서는 안된다. 마치 데이터인것 처럼 사용해야한다. (괄호를 붙이지 말 것)</p>
 <p>무언가를 출력하고자 할 때 주로 사용한다. 왜냐하면 캐싱되어 필요할 때에만 동작하기 때문에 methods 보다 성능상 낫기 때문이다.</p>
 
-## <b class="important"> 생명주기 (LifeCycle) </b>
+## <b> 생명주기 (LifeCycle) </b>
 > vue3에서 뷰 객체 생성부터 소멸까지의 생명주기
 ```
 createApp({...})
@@ -181,7 +178,7 @@ export default () {
 </style>
 ```
 
-### <b class="important">slot</b>
+### <b>slot</b>
 > 컴포넌트에 템플릿 끼워넣기
 ```js
 // A.vue
@@ -273,8 +270,192 @@ export default {
 
 ```
 
+## Router
+> 라우터
 
-## 참조
+https://router.vuejs.org/kr/
+
+### 설치하기
+
+```sh
+npm i vue-router
+npm i vue-router@next
+vue add router
 ```
-https://kr.vuejs.org/v2/style-guide/index.html (vue.js 표준코딩 가이드)
+   
+Vue Router 버전에 따라 사용법이 상이하겠지만 Vue3 기준으로 기본적인 사용방법은 다음과 같다.
+
+```js
+import {createRouter, createWebHistory} from 'vue-router'
+const router = createRouter({
+    history: createWebHistory(),
+    // 라우트 데이터가 들어가는 영역
+    routes: [
+        ...
+    ],
+    // router-link 에서 생성되는 a 태그 클래스명을 커스터마이징
+    linkActiveClass: 'active',
+});
+
+app.use(router)
+app.mount('#app');
+```
+(!) [createRouter](https://next.router.vuejs.org/guide/migration/)메소드는 Vue2 에서 new Router() 에 해당한다.    
+(!) [createWebHistory](https://router.vuejs.org/kr/guide/essentials/history-mode.html) 메소드는 history 인자에 할당하는 모드 중에 HTML5 모드에 해당한다.    
+
+### 일반 라우트
+
+ **routes** 인자에 주소 객체를 할당하면 된다. 우선 간단한 메인 페이지를 예로 들어보자    
+
+```js
+/* 
+    name:      라우트 객체의 명칭이자 식별키
+    redirect:  path 값에서 redirect 값으로 리다이렉트 한다
+    alias:     alias 값으로 와도 path 값으로 인식하게 한다
+    meta:      아무 값이나 담아두고 사용 할 수 있다. (주로 네비게이션 가드에서 사용)
+    component: router-view 에서 보여줄 컴포넌트
+*/
+{ 
+    name: 'root', 
+    path: '/home', 
+    redirect: '/' 
+    alias: 'house', 
+    meta: {
+        first_name: 'MINSANG',
+        last_name: 'YU',
+    },
+    component: HomeComponent,
+},
+
+```
+```html 
+<template>
+    <nav>   
+        <router-link to="/home"><router-link>
+    </nav>
+    <main>
+        <router-view></router-view>
+    </main>
+</template>
+```
+
+### 동적 라우트
+> https://router.vuejs.org/kr/guide/essentials/dynamic-matching.html
+
+보편적으로 자원주소는 (product/101, product/102) ... 와 같은 형태를 지니고 페이지들이 있다.   
+흔히 **상세** 페이지라고들 하는데 끝자락의 숫자는 동적으로 변하는 ID 일 것이다.   
+위와같은 페이지는 어떻게 구성해야 할까?   
+
+```js
+/*
+    props: 파라미터(params) 에 해당하는 값(:id)을 props로 받을지 여부.
+    components: 여러개의 router-view 를 구성 할 때 사용
+                ex). <router-view name="category"></router-view>
+*/
+{
+    name: 'product-detail',
+    path: '/product/:id',
+    components: {
+        default: ProductDetail,
+        category: CategoryList,
+    },
+    props: true,
+}
+```
+
+### 중첩 라우트
+> https://router.vuejs.org/kr/guide/essentials/nested-routes.html
+
+자원주소로 접근하면 router-view 에서 컴포넌트를 렌더링 하는 것을 알고 있다. 그러나
+**children** 에 속하는 컴포넌트까지 보여주지 않는다.    
+그러므로, 부모컴포넌트 템플릿에서 한번 더 router-view 태그를 선언해야 한다.   
+
+```js
+{ 
+    name: 'home', 
+    path: '/home', 
+    component: HomeComponent,
+
+    children: [
+        { name: 'product-list', path: '/products', component: ProductList },
+        { name: 'category-list', path: '/categories', component: CategoryList },
+    ],
+},
+
+```
+
+### 스크롤 동작
+> https://router.vuejs.org/kr/guide/advanced/scroll-behavior.html
+
+라우트가 변경될 때마다 스크롤을 제어할 때 유용하다.
+
+```js
+const router = createRouter({
+    routes: [
+        ...
+    ],
+
+    scrollBehavior(to, from, savedPosition) {
+        // 뒤로가기를 할 경우 savedPosition 가 존재 할 것. 이 경우 스크롤 위치로 이동
+        if (savedPosition) {
+            return savedPosition;
+        }
+        return { left: 0, top: 0 }; // 아니면 상단으로 이동
+    }
+})
+```
+
+### 네비게이션 가드
+> https://router.vuejs.org/kr/guide/advanced/navigation-guards.html
+
+접근을 제어 할 때 주로 사용한다.   
+생명주기 메소드와 유사한 기능을 수행한다. 라우팅의 생명주기라고 할수도 있을 것이다.   
+라우팅 전체에서 메소드를 실행하려면  _**beforeEach**_, _**afterEach**_ 을 사용한다.
+
+```js
+const router = createRouter({ ... });
+
+// 라우트가 변경되기 전 동작
+router.beforeEach((to, from, next) => {
+    to.name === 'secret' ? next(false) : next(true);
+});
+
+// 라우트가 변경된 후 동작
+router.afterEach((to, from) => {
+)};
+```
+
+_**beforeEnter**_ 라우트마다 개별적으로 사용 할 수도 있을 것이다.
+
+```js
+routes:[
+    {
+        name: 'secret',
+        path: '/secret'
+        ...
+        beforeEnter: (to, from, next) => {
+            // ...
+        },
+    }
+]
+```
+더 나아가 컴포넌트 내부에서도 정의 할 수 있다.   
+_**beforeRouteEnter**_, _**beforeRouteUpdate**_, _**beforeRouteLeave**_ 
+
+```js
+export default {
+    // 라우트가 생성되어 진입 직전
+    beforeRouteEnter() {
+        console.log('before route enter');
+    },
+    // 라우트가 변경되기 전
+    beforeRouteUpdate() {
+        console.log('before route update');
+    },
+    // 다른 페이지로 이동하기전
+    beforeRouteLeave(to, from, next) {
+        console.log('before route leave');
+    },
+},
+
 ```
