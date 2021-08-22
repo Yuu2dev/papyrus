@@ -409,8 +409,7 @@ const router = createRouter({
 > https://router.vuejs.org/kr/guide/advanced/navigation-guards.html
 
 접근을 제어 할 때 주로 사용한다.   
-생명주기 메소드와 유사한 기능을 수행한다. 라우팅의 생명주기라고 할수도 있을 것이다.   
-라우팅 전체에서 메소드를 실행하려면  _**beforeEach**_, _**afterEach**_ 을 사용한다.
+라우팅 전체 (전역) 정의는  _**beforeEach**_, _**afterEach**_ 을 사용한다.
 
 ```js
 const router = createRouter({ ... });
